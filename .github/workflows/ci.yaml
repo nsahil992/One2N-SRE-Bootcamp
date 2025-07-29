@@ -1,0 +1,77 @@
+name: CI pipeline
+
+on: 
+  push:
+    branches: [master, feature]
+    paths:
+      - "main.go"
+      - "config.go"
+      - "db.go"
+      - "model.go"
+      - "handler.go"
+      - "routes.go"
+      - "prometheus.go"
+      - "Makefile"
+      - "schema.sql"
+      - "go.mod"
+      - "go.sum"
+      - "handler_test.go"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [master, feature]
+    paths:
+      - "main.go"
+      - "config.go"
+      - "db.go"
+      - "model.go"
+      - "handler.go"
+      - "routes.go"
+      - "prometheus.go"
+      - "Makefile"
+      - "schema.sql"
+      - "go.mod"
+      - "go.sum"
+      - "handler_test.go"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+jobs:
+  build-test-lint-docker:
+    runs-on: self-hosted   
+
+    env:
+      VERSION: ${{ github.sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.6' 
+
+      - name: Install golangci-lint
+        run: |
+          brew install golangci-lint
+
+      - name: Build Go binary
+        run: make build
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Run linter
+        run: make lint
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: make docker-build VERSION=${{ env.VERSION }}
+
+      - name: Push Docker image
+        run: make docker-push VERSION=${{ env.VERSION }}
