@@ -3,8 +3,8 @@
 BINARY = student-api
 VERSION ?= 1.0.0
 
-include .env
-export $(shell sed 's/=.*//' .env)
+-include .env
+export $(shell [ -f .env ] && sed 's/=.*//' .env || echo "")
 
 build:
 	go build -o $(BINARY) .
@@ -28,7 +28,7 @@ clean:
 	rm -f $(BINARY)
 
 docker-build:
-<TAB>docker build -t nsahil992/student-api:$(VERSION) .
+	docker build -t nsahil992/student-api:$(VERSION) .
 
 docker-run:
 	docker run --env-file .env -p 8008:8080 nsahil992/student-api:$(VERSION)
