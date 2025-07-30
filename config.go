@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 )
 
+// Config holds environment configuration
 type Config struct {
 	DBHost     string
 	DBPort     string
@@ -16,18 +16,29 @@ type Config struct {
 	Port       string
 }
 
+// LoadConfig loads config values from environment variables
 func LoadConfig() Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found, using environment variables")
+	cfg := Config{
+		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBPort:     getEnv("DB_PORT", "5432"),
+		DBUser:     getEnv("DB_USER", "postgres"),
+		DBPassword: getEnv("DB_PASSWORD", ""),
+		DBName:     getEnv("DB_NAME", "studentdb"),
+		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+		Port:       getEnv("PORT", "8080"),
 	}
-	return Config{
-		DBHost:     os.Getenv("DB_HOST"),
-		DBPort:     os.Getenv("DB_PORT"),
-		DBUser:     os.Getenv("DB_USER"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		DBName:     os.Getenv("DB_NAME"),
-		DBSSLMode:  os.Getenv("DB_SSLMODE"),
-		Port:       os.Getenv("PORT"),
+
+	// Optional: Log missing critical config (like DB_PASSWORD)
+	if cfg.DBPassword == "" {
+		log.Println("Warning: DB_PASSWORD is empty")
 	}
+	return cfg
+}
+
+// getEnv reads an env var or returns fallback value
+func getEnv(key, fallback string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
+	}
+	return fallback
 }

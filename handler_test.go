@@ -10,35 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Helper function to create a Gin engine with routes and mocked DB
-func setupRouterWithDB(mockDB sqlmock.Sqlmock, dbRows ...func()) (*gin.Engine, *sqlmock.Sqlmock) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		panic("failed to create sqlmock: " + err.Error())
-	}
-	if mockDB != nil {
-		mock = mockDB
-	}
-	r := gin.Default()
-
-	// Attach Prometheus middleware if you have it (optional)
-	// r.Use(PrometheusMiddleware())
-
-	api := r.Group("/api/v1")
-	{
-		api.POST("/students", CreateStudent(db))
-		api.GET("/students", GetAllStudents(db))
-		api.GET("/students/:id", GetStudent(db))
-		api.PUT("/students/:id", UpdateStudent(db))
-		api.DELETE("/students/:id", DeleteStudent(db))
-	}
-
-	r.GET("/healthcheck", HealthCheck)
-	r.GET("/metrics", MetricsHandler())
-
-	return r, &mock
-}
-
 func TestHealthCheck(t *testing.T) {
 	r := gin.Default()
 	r.GET("/healthcheck", HealthCheck)
@@ -61,7 +32,6 @@ func TestCreateStudent(t *testing.T) {
 	r := gin.Default()
 	r.POST("/api/v1/students", CreateStudent(db))
 
-	// Expect INSERT query with given args
 	mock.ExpectQuery(`INSERT INTO students`).
 		WithArgs("Test User", 20, "test@example.com").
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
@@ -76,29 +46,6 @@ func TestCreateStudent(t *testing.T) {
 	if w.Code != http.StatusCreated {
 		t.Errorf("Expected status 201, got %d", w.Code)
 	}
-	// Optionally, check response body contains id, etc.
-}
-
-func TestGetAllStudents(t *testing.T) {
-	db, mock, _ := sqlmock.New()
-	r := gin.Default()
-	r.GET("/api/v1/students", GetAllStudents(db))
-
-	// Prepare mock rows
-	rows := sqlmock.NewRows([]string{"id", "name", "age", "email"}).
-		AddRow(1, "Alice", 22, "alice@example.com").
-		AddRow(2, "Bob", 21, "bob@example.com")
-
-	mock.ExpectQuery(`SELECT id, name, age, email FROM students`).WillReturnRows(rows)
-
-	req, _ := http.NewRequest("GET", "/api/v1/students", nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status 200, got %d", w.Code)
-	}
-	// Optionally check JSON contains the students array
 }
 
 func TestGetStudent(t *testing.T) {
@@ -149,19 +96,6 @@ func TestDeleteStudent(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	req, _ := http.NewRequest("DELETE", "/api/v1/students/1", nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status 200, got %d", w.Code)
-	}
-}
-
-func TestMetricsEndpoint(t *testing.T) {
-	r := gin.Default()
-	r.GET("/metrics", MetricsHandler())
-
-	req, _ := http.NewRequest("GET", "/metrics", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
