@@ -2,3 +2,4 @@
 .idea
 .env
 student-data
+postgres-secret.yml
