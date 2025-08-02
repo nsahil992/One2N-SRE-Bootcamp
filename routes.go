@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,18 +11,25 @@ import (
 func SetupRouter(db *sql.DB) *gin.Engine {
 	r := gin.Default()
 
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Welcome to Student API"})
+	})
+
 	api := r.Group("/api/v1")
 	{
 		api.POST("/students", CreateStudent(db))
+		api.GET("/students", GetAllStudents(db)) // Added list all
 		api.GET("/students/:id", GetStudent(db))
 		api.PUT("/students/:id", UpdateStudent(db))
 		api.DELETE("/students/:id", DeleteStudent(db))
-		// Add other API routes here as needed
 	}
 
 	r.GET("/healthcheck", HealthCheck)
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "OK"})
+	})
 
-	// You can add /metrics route here if using Prometheus
+	r.GET("/metrics", MetricsHandler()) // Prometheus metrics route
 
 	return r
 }
