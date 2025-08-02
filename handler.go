@@ -56,6 +56,33 @@ func GetStudent(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
+// GetAllStudents handles GET /students (list all)
+func GetAllStudents(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rows, err := db.Query("SELECT id, name, age, email FROM students")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer func() {
+			if err := rows.Close(); err != nil {
+				log.Printf("failed to close rows: %v", err)
+			}
+		}()
+
+		var students []Student
+		for rows.Next() {
+			var s Student
+			if err := rows.Scan(&s.ID, &s.Name, &s.Age, &s.Email); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			students = append(students, s)
+		}
+		c.JSON(http.StatusOK, students)
+	}
+}
+
 // UpdateStudent handles PUT /students/:id
 func UpdateStudent(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -107,35 +134,5 @@ func DeleteStudent(db *sql.DB) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Student deleted"})
-	}
-}
-
-// Example function showing query with rows.Close() error handling
-func GetAllStudents(db *sql.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		rows, err := db.Query("SELECT id, name, age, email FROM students")
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		// Check error on rows.Close()
-		defer func() {
-			if err := rows.Close(); err != nil {
-				log.Printf("failed to close rows: %v", err)
-			}
-		}()
-
-		var students []Student
-		for rows.Next() {
-			var s Student
-			if err := rows.Scan(&s.ID, &s.Name, &s.Age, &s.Email); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			students = append(students, s)
-		}
-
-		c.JSON(http.StatusOK, students)
 	}
 }

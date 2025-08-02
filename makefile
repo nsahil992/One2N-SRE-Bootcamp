@@ -1,7 +1,7 @@
 .PHONY: build run migrate test tidy lint clean docker-build docker-run docker-push ci
 
 BINARY = student-api
-VERSION ?= 1.0.0
+VERSION ?= 1.0.3
 
 -include .env
 export $(shell [ -f .env ] && sed 's/=.*//' .env || echo "")

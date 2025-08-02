@@ -5,6 +5,7 @@ FROM golang@sha256:adfbe17b774398cb090ad257afd692f2b7e0e7aaa8ef0110a48f0a775e396
 WORKDIR /app
 
 COPY go.mod go.sum ./
+COPY schema.sql ./
 
 RUN go mod download
 
@@ -19,6 +20,7 @@ FROM alpine@sha256:b3119ef930faabb6b7b976780c0c7a9c1aa24d0c75e9179ac10e6bc9ac080
 WORKDIR /app
 
 COPY --from=builder /app/student-api .
+COPY --from=builder /app/schema.sql .
 
 EXPOSE 8080
 

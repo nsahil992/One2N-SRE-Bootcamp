@@ -1,0 +1,146 @@
+# ----- Application Namespace -----
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: student-api
+
+---
+
+# ----- ConfigMap: Non-sensitive env vars -----
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: student-api-config
+  namespace: student-api
+data:
+  PORT: "8080"
+  DB_HOST: "student-db"
+  DB_PORT: "5432"
+  DB_SSLMODE: "disable"
+
+---
+
+# ----- Application Deployment -----
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-api-deployment
+  namespace: student-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: student-api
+  template:
+    metadata:
+      labels:
+        app: student-api
+    spec:
+      nodeSelector:
+        type: application
+      initContainers:
+        - name: db-migrate
+          image: nsahil992/student-api:1.0.3
+          command: [ "./student-api", "migrate", "-c", "/app/schema.sql" ]
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: DB_PORT
+            - name: DB_SSLMODE
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: DB_SSLMODE
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: student-api-secret
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: student-api-secret
+                  key: POSTGRES_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: student-api-secret
+                  key: POSTGRES_DB
+
+      containers:
+        - name: student-api
+          image: nsahil992/student-api:1.0.3
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: PORT
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: DB_PORT
+            - name: DB_SSLMODE
+              valueFrom:
+                configMapKeyRef:
+                  name: student-api-config
+                  key: DB_SSLMODE
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: student-api-secret
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: student-api-secret
+                  key: POSTGRES_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: student-api-secret
+                  key: POSTGRES_DB
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 8080
+
+---
+
+# ----- Application Service -----
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: student-api-service
+  namespace: student-api
+spec:
+  selector:
+    app: student-api
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP
