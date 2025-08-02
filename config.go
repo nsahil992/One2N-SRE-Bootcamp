@@ -5,7 +5,6 @@ import (
 	"os"
 )
 
-// Config holds environment configuration
 type Config struct {
 	DBHost     string
 	DBPort     string
@@ -23,22 +22,21 @@ func LoadConfig() Config {
 		DBPort:     getEnv("DB_PORT", "5432"),
 		DBUser:     getEnv("DB_USER", "postgres"),
 		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "studentdb"),
+		DBName:     getEnv("DB_NAME", "students"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
 		Port:       getEnv("PORT", "8080"),
 	}
 
-	// Optional: Log missing critical config (like DB_PASSWORD)
 	if cfg.DBPassword == "" {
 		log.Println("Warning: DB_PASSWORD is empty")
 	}
+
 	return cfg
 }
 
-// getEnv reads an env var or returns fallback value
 func getEnv(key, fallback string) string {
-	if v, ok := os.LookupEnv(key); ok {
-		return v
+	if val, ok := os.LookupEnv(key); ok && val != "" {
+		return val
 	}
 	return fallback
 }
