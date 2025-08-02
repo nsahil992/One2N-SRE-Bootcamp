@@ -1,5 +1,3 @@
-// prometheus.go
-
 package main
 
 import (
