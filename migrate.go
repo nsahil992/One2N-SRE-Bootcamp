@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os" // <-- Use os, not io/ioutil
 )
 
 // runMigrations runs the SQL statements in the given schema file on the DB configured by cfg
@@ -17,7 +17,7 @@ func runMigrations(cfg Config, schemaFile string) error {
 	}()
 
 	log.Printf("Reading schema file: %s", schemaFile)
-	schema, err := ioutil.ReadFile(schemaFile)
+	schema, err := os.ReadFile(schemaFile) // <-- Use os.ReadFile
 	if err != nil {
 		return fmt.Errorf("failed to read schema file: %w", err)
 	}
