@@ -20,7 +20,9 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "migrate" {
 		migrateCmd := flag.NewFlagSet("migrate", flag.ExitOnError)
 		schemaPath := migrateCmd.String("c", "schema.sql", "Path to schema.sql")
-		migrateCmd.Parse(os.Args[2:])
+		if err := migrateCmd.Parse(os.Args[2:]); err != nil { // <-- Fix: check error
+			log.Fatalf("failed to parse migrate subcommand: %v", err)
+		}
 
 		cfg := LoadConfig()
 		log.Println("Starting database migration...")
