@@ -1,24 +1,15 @@
-# ----- Application Namespace -----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: student-api
-
----
-
 # ----- ConfigMap: Non-sensitive env vars -----
 
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: student-api-config
-  namespace: student-api
+  namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
 data:
-  PORT: "8080"
-  DB_HOST: "student-db"
-  DB_PORT: "5432"
-  DB_SSLMODE: "disable"
+  PORT: "{{ .Values.api.port }}"
+  DB_HOST: "{{ .Values.api.config.DB_HOST }}"
+  DB_PORT: "{{ .Values.api.config.DB_PORT }}"
+  DB_SSLMODE: "{{ .Values.api.config.DB_SSLMODE }}"
 
 ---
 
@@ -28,9 +19,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: student-api-deployment
-  namespace: student-api
+  namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.api.replicas }}
   selector:
     matchLabels:
       app: student-api
@@ -43,7 +34,7 @@ spec:
         type: application
       initContainers:
         - name: db-migrate
-          image: nsahil992/student-api:1.0.3
+          image: {{ .Values.api.image }}:{{ .Values.api.tag }}
           command: [ "./student-api", "migrate", "-c", "/app/schema.sql" ]
           env:
             - name: DB_HOST
@@ -79,9 +70,9 @@ spec:
 
       containers:
         - name: student-api
-          image: nsahil992/student-api:1.0.3
+          image: {{ .Values.api.image }}:{{ .Values.api.tag }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.api.port }}
           env:
             - name: PORT
               valueFrom:
@@ -121,11 +112,11 @@ spec:
           readinessProbe:
             httpGet:
               path: /healthcheck
-              port: 8080
+              port: {{ .Values.api.port }}
           livenessProbe:
             httpGet:
               path: /healthcheck
-              port: 8080
+              port: {{ .Values.api.port }}
 
 ---
 
@@ -135,12 +126,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: student-api-service
-  namespace: student-api
+  namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
 spec:
   selector:
     app: student-api
   ports:
     - port: 80
-      targetPort: 8080
+      targetPort: {{ .Values.api.port }}
       protocol: TCP
   type: ClusterIP
