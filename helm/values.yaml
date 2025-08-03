@@ -1,0 +1,23 @@
+namespaceOverride: ""
+
+api:
+  image: nsahil992/student-api
+  tag: "1.0.3"
+  replicas: 1
+  port: 8080
+  config:
+    DB_HOST: "student-db"
+    DB_PORT: "5432"
+    DB_SSLMODE: "disable"
+
+db:
+  image: postgres:15-alpine
+  replicas: 1
+  port: 5432
+  config:
+    POSTGRES_DB: "studentdb"
+    POSTGRES_PORT: "5432"
+  persistence:
+    storage: 1Gi
+    storageClassName: manual
+    path: /Users/Sahil/Desktop/One2N-SRE-Bootcamp/student-data
