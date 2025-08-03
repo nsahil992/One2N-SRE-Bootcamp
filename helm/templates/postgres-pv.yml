@@ -1,0 +1,33 @@
+# Persistent Volume
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: student-api-pv
+  namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
+spec:
+  capacity:
+    storage: {{ .Values.db.persistence.storage }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.db.persistence.storageClassName }}
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.db.persistence.path }}
+
+---
+
+# Persistent Volume Claim
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: student-api-pvc
+  namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.db.persistence.storage }}
+  storageClassName: {{ .Values.db.persistence.storageClassName }}
