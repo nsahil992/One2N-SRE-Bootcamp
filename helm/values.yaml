@@ -2,7 +2,7 @@ namespaceOverride: ""
 
 api:
   image: nsahil992/student-api
-  tag: "1.0.3"
+  tag: '1.0.3'
   replicas: 1
   port: 8080
   config:
