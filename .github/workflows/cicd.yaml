@@ -60,3 +60,4 @@ jobs:
           git add helm/values.yaml
           git commit -m "chore: update Helm chart image tag to ${{ env.VERSION }}"
           git push origin lvl9
+          
