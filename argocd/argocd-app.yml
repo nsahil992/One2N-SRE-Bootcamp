@@ -4,6 +4,7 @@ metadata:
   name: argocd-student-api
   namespace: argocd
 spec:
+  project: default
   source:
     repoURL: https://github.com/nsahil992/One2N-SRE-Bootcamp.git
     targetRevision: lvl9
