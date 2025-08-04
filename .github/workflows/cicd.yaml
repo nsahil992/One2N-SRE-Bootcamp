@@ -53,7 +53,7 @@ jobs:
 
       - name: Update Helm chart image tag in values.yaml
         run: |
-          sed -i "s/tag: .*/tag: '${{ env.VERSION }}'/" helm//values.yaml
+          sed -i "s/tag: .*/tag: '${{ env.VERSION }}'/" helm/values.yaml
 
       - name: git commit and push values.yaml
         run: |
