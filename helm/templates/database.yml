@@ -50,10 +50,10 @@ spec:
                   name: student-api-secret
                   key: POSTGRES_PASSWORD
           volumeMounts:
-            - name: postgres-data
+            - name: student-data
               mountPath: /var/lib/postgresql/data
       volumes:
-        - name: postgres-data
+        - name: student-data
           persistentVolumeClaim:
             claimName: student-api-pvc
 
