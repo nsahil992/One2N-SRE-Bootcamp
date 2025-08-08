@@ -12,13 +12,13 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "Welcome to Student API"})
+		c.JSON(http.StatusOK, gin.H{"message": "Hello Ngineers, from One2N Bootcamp ⬆️"})
 	})
 
 	api := r.Group("/api/v1")
 	{
 		api.POST("/students", CreateStudent(db))
-		api.GET("/students", GetAllStudents(db)) // Added list all
+		api.GET("/students", GetAllStudents(db))
 		api.GET("/students/:id", GetStudent(db))
 		api.PUT("/students/:id", UpdateStudent(db))
 		api.DELETE("/students/:id", DeleteStudent(db))
