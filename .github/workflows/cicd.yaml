@@ -41,9 +41,10 @@ jobs:
           make docker-push VERSION=${{ env.VERSION }}
 
   cd:
-    name: Continuous Deployment
+    name: Continuous Deployment (Helm + Git Push)
     runs-on: [self-hosted]
     needs: CI
+    if: github.ref == 'refs/heads/master'  
     env:
       VERSION: ${{ secrets.SEMVER_VERSION }}
 
@@ -51,15 +52,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Update Helm chart image tag in values.yaml
+      - name: Update Helm chart image tag
         run: |
-          sed -i '' "s/tag: .*/tag: '${{ env.VERSION }}'/" helm/values.yaml
+         sed -i '' "s/tag: .*/tag: '${{ env.VERSION }}'/" helm/values.yaml
 
-      - name: git commit and push values.yaml
+      - name: Git commit and push
         run: |
           git add helm/values.yaml
-          git commit -m "chore: update Helm chart image tag to ${{ env.VERSION }}"
-          git push origin lvl9
-          
-
-
+          git commit -m "chore: update Helm chart image tag to ${{ env.VERSION }}" || echo "No changes"
+          git push origin master
