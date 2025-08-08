@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/nsahil992/One2N-SRE-Bootcamp.git
-    targetRevision: lvl9
+    targetRevision: master
     path: helm
     helm:
       valueFiles:
