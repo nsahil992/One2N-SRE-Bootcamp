@@ -5,7 +5,7 @@
 
 ## 🧭 Overview
 
-A production-grade, versioned RESTful API for managing student records — built with **Go** and the **Gin** web framework, backed by a **PostgreSQL** database. Designed with clean architecture, environment configuration, and monitoring readiness.
+A production-grade, versioned RESTful API for managing student records. Built with **Go** and the **Gin** web framework, backed by a **PostgreSQL** database. Designed with clean architecture, environment configuration, and monitoring readiness.
 
 ---
 
@@ -13,7 +13,7 @@ A production-grade, versioned RESTful API for managing student records — built
 
 - ✅ CRUD operations on student records
 - 🔐 Environment-based configuration via `.env`
-- 🧪 Unit tests using `sqlmock`
+- 🧪 Unit tests for different endpoints
 - 📊 Prometheus-compatible `/metrics` endpoint
 - 🔁 Healthcheck endpoint `/healthcheck`
 - 🔧 Makefile automation (`build`, `run`, `test`, `migrate`)
@@ -41,21 +41,43 @@ Additional endpoints:
 
 ```
 One2N-SRE-Bootcamp/
-├── main.go                 # Entry point: loads config, sets up DB & starts Gin server
-├── config.go               # Loads environment variables from .env
-├── db.go                   # Connects to PostgreSQL using environment config
-├── model.go                # Defines Student struct for ORM mapping
-├── handler.go              # Implements all HTTP handlers with logging
-├── routes.go               # Registers routes and middleware with Gin engine
-├── prometheus.go           # (Optional) Prometheus metrics middleware & endpoint
-├── schema.sql              # SQL schema to create 'students' table
-├── Dockerfile              # To containerize the application
-├── .dockerignore           # Exclude unnecessary files 
-├── .env                    # Environment variables (excluded from version control)
-├── Makefile                # Build, run, migrate, test automation targets
-├── handler_test.go         # Unit tests using sqlmock for isolated handler testing
-├── postman_collection.json # Postman collection for testing all API endpoints
-├── go.mod / go.sum         # Go module files for dependency tracking
+│
+├── .github/                      # GitHub-specific files
+│   └── workflows/
+│       └── cicd.yaml             # GitHub Actions CI/CD pipeline
+│
+├── argocd/                       # ArgoCD configuration
+│   └── argocd-app.yml            # ArgoCD application manifest
+│
+├── helm/                         # Helm chart directory
+│   ├── templates/
+│   │   ├── application.yml       # Kubernetes Deployment
+│   │   ├── database.yml          # Kubernetes DB Deployment
+│   │   ├── postgres-pv.yml       # PersistentVolume for PostgreSQL
+│   │   └── postgres-secret.yml   # Secrets for PostgreSQL
+│   ├── Chart.yaml                # Helm chart definition
+│   └── values.yaml               # Default values for the Helm chart
+├── routes.go                     # Registers routes and middleware with Gin engine
+├── schema.sql                    # SQL schema to create 'students' table
+├── scripts/                      # Utility scripts
+│   └── devtools.sh               # Tools installation script
+├── prometheus.go                 # Prometheus metrics middleware & endpoint
+├── student-data/                 # Directory to store student-related data
+├── model.go                      # Defines Student struct 
+├── .dockerignore                 # Exclude unnecessary files 
+├── .env                          # Environment variables (excluded from version control)
+├── .gitignore                    # Git ignore file
+├── config.go                     # App configuration
+├── db.go                         # Connects to PostgreSQL using environment config
+├── docker-compose.yaml           # Docker Compose config for local setup
+├── Dockerfile                    # Dockerfile for building the application image
+├── go.mod / go.sum               # Go module files for dependency tracking
+├── handler.go                    # Implements all HTTP handlers with logging
+├── handler_test.go               # Unit tests using sqlmock for isolated handler testing
+├── main.go                       # Application entry point
+├── makefile                      # Makefile automation targets
+└── migrate.go                    # Migration logic
+
 ```
 ---
 
@@ -149,10 +171,70 @@ go test -v
 
 ---
 
-## 📊 Monitoring
+## 🐳 Containerise REST API
 
-- A Prometheus-compatible `/metrics` endpoint is exposed.
-- Middleware collects HTTP request metrics such as counts and durations.
-- You can integrate this API with Prometheus & Grafana to visualize service metrics and health.
+### Instructions to build the image and run the docker container
+
+```
+# Building the Docker image:
+make docker-build
+OR
+docker build -t yourdockerusername/student-api:tag .
+```
+
+```
+# Running the Docker image:
+make docker-run
+OR
+docker run --env-file .env -p 8080:8080 yourdockerusername/student-api:tag
+```
+
+```
+# Tagging the docker image:
+docker tag student-api:tag yourdockerusername/student-api:tag
+```
+
+```
+# Pushing the docker image:
+make docker-push
+OR
+docker push yourdockerusername/student-api:tag
+```
 
 ---
+
+## 📦📦 Setup one-click local development setup
+
+```
+# Pre-requisite for existing tools that must already be installed (Only for Linux)
+
+cd scripts && chmod +x devtools.sh
+./devtools.sh
+```
+
+```
+# Run docker compose
+make docker-compose
+OR
+docker-compose up # Run DB + API using docker-compose
+```
+
+---
+
+## ☸️ Deploy REST API & its dependent services in K8s
+
+```
+# Note: The commands can change according to the file structure
+
+cd templates
+
+kubectl create namespace student-api (Create a namespace for k8s isolation)
+
+kubectl apply -f postgres-secret.yml -f postgres-pv.yml -f database.yml -f application.yml -n student-api
+
+```
+
+---
+
+## 📈 Deploy REST API & its dependent services using Helm Charts
+
