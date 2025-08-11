@@ -127,6 +127,10 @@ kind: Service
 metadata:
   name: student-api-service
   namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "80"
 spec:
   selector:
     app: student-api
