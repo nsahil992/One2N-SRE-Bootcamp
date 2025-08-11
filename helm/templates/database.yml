@@ -16,7 +16,7 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: student-db
+  name: student-db-deployment
   namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
 spec:
   replicas: {{ .Values.db.replicas }}
@@ -64,7 +64,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: student-db
+  name: student-db-service
   namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
 spec:
   selector:

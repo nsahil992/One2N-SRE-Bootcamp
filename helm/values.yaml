@@ -6,7 +6,7 @@ api:
   replicas: 1
   port: 8080
   config:
-    DB_HOST: "student-db"
+    DB_HOST: "student-db-service"
     DB_PORT: "5432"
     DB_SSLMODE: "disable"
 
