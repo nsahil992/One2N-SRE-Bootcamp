@@ -7,10 +7,34 @@ services:
     env_file:
       - .env
     depends_on:
-      database:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     ports:
       - "8080:8080"
+    networks:
+      - student_net
+
+  migrate:
+    container_name: student-api-migrate
+    image: postgres:16
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./schema.sql:/schema.sql:ro
+    entrypoint:
+      - sh
+      - -c
+      - |
+        echo "Waiting for DB to be ready..."
+        until pg_isready -h database -U ${DB_USER}; do
+          sleep 2
+        done
+        echo "Running migrations..."
+        psql -h database -U ${DB_USER} -d ${DB_NAME} -f /schema.sql
+        echo "Migrations completed."
     networks:
       - student_net
 
@@ -25,7 +49,7 @@ services:
     ports:
       - "5440:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
       timeout: 3s
       retries: 5

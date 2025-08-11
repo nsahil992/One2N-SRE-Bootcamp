@@ -1,9 +1,6 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - '*'  
   pull_request:
     branches:
       - master  
@@ -35,12 +32,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build test and push Docker image
         run: |
+          make docker-test
           make docker-build VERSION=${{ env.VERSION }}
           make docker-push VERSION=${{ env.VERSION }}
 
-  cd:
+  CD:
     name: Continuous Deployment (Helm + Git Push)
     runs-on: [self-hosted]
     needs: CI
