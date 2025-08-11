@@ -30,6 +30,9 @@ clean:
 docker-build:
 	docker build -t nsahil992/student-api:$(VERSION) .
 
+docker-test:
+	hadolint Dockerfile
+
 docker-run:
 	docker run --env-file .env -p 8080:8080 nsahil992/student-api:$(VERSION)
 
